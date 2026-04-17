@@ -249,12 +249,19 @@
             color: var(--md-sys-color-on-surface);
             background-color: var(--md-sys-color-surface-container-highest);
             transition: all 0.3s ease;
+            cursor: pointer;
         }
 
         .cal-date-circle.is-today {
             background-color: var(--md-sys-color-primary);
             color: var(--md-sys-color-on-primary);
-            box-shadow: 0 0 0 3px var(--md-sys-color-primary-container);
+        }
+
+        /* 历史选中日期高亮状态 */
+        .cal-date-circle.is-selected {
+            box-shadow: 0 0 0 2px var(--md-sys-color-background), 0 0 0 4px var(--md-sys-color-primary);
+            transform: scale(1.05);
+            z-index: 2;
         }
 
         .cal-date-circle.is-completed {
@@ -688,7 +695,7 @@
     </header>
 
     <main class="container" id="main-content">
-        <!-- 日历与打卡追踪 -->
+        <!-- 日历与打卡追踪 (支持点击历史日期) -->
         <section>
             <div class="card calendar-card" id="calendarCard">
                 <div class="cal-header">
@@ -709,11 +716,28 @@
             </div>
         </section>
 
-        <!-- 新增模块：身材打卡 -->
+        <!-- 身材打卡 -->
         <section>
             <div class="card" id="card-photo" style="padding: 20px 24px;">
                 <div class="card-header">
-                    <div class="card-title">📸 今日身材记录</div>
+                    <div class="card-title" id="photo-title">📸 今日身材记录</div>
+                </div>
+
+                <!-- 图片已上传但未加载的状态 -->
+                <div id="photoExistState" style="display: none; text-align: center; padding: 30px 20px; border: 2px dashed var(--md-sys-color-outline); border-radius: var(--md-sys-shape-corner-large); background-color: var(--md-sys-color-surface-container-high);">
+                    <span class="material-symbols-rounded" style="font-size: 40px; color: var(--md-sys-color-primary); margin-bottom: 8px;">image</span>
+                    <p style="font-size: 14px; font-weight: 500; margin-bottom: 16px;">已保存身材照片</p>
+                    
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button id="triggerLoadPhoto" class="filled-button js-ripple" style="width: auto; padding: 10px 24px; border-radius: 20px;">
+                            <span class="material-symbols-rounded" style="font-size: 20px;">visibility</span> 查看
+                        </button>
+                        <button id="downloadPhotoDirectBtn" class="filled-button js-ripple" style="width: auto; padding: 10px 24px; border-radius: 20px; background-color: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container);">
+                            <span class="material-symbols-rounded" style="font-size: 20px;">download</span> 下载
+                        </button>
+                    </div>
+
+                    <p style="font-size: 13px; color: var(--md-sys-color-outline); margin-top: 16px; cursor: pointer; text-decoration: underline;" class="trigger-reupload">替换或重新上传</p>
                 </div>
                 
                 <label class="upload-area" id="uploadArea">
@@ -721,21 +745,32 @@
                     
                     <div class="upload-placeholder" id="uploadPlaceholder">
                         <span class="material-symbols-rounded">add_a_photo</span>
-                        <p style="font-size: 14px; font-weight: 500;">点击上传今日照片</p>
+                        <p style="font-size: 14px; font-weight: 500;">点击上传照片</p>
                     </div>
-                    
-                    <img id="photoPreview" src="" alt="身材预览">
                     
                     <div class="loading-overlay" id="uploadLoading" style="display: none;">
                         正在上传...
                     </div>
                 </label>
+
+                <!-- 图片展示及操作区 -->
+                <div id="photoDisplayArea" style="display: none; text-align: center;">
+                    <img id="photoPreview" src="" alt="身材预览" style="width: 100%; height: auto; max-height: 400px; object-fit: contain; border-radius: var(--md-sys-shape-corner-large); background-color: var(--md-sys-color-surface-container-highest);">
+                    
+                    <div style="display: flex; gap: 12px; justify-content: center; margin-top: 16px;">
+                        <button id="downloadPhotoLoadedBtn" class="filled-button js-ripple" style="width: auto; padding: 10px 24px; border-radius: 20px; background-color: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container);">
+                            <span class="material-symbols-rounded" style="font-size: 20px;">download</span> 下载图片
+                        </button>
+                    </div>
+
+                    <p style="font-size: 13px; color: var(--md-sys-color-outline); margin-top: 16px; cursor: pointer; text-decoration: underline;" class="trigger-reupload">替换或重新上传</p>
+                </div>
             </div>
         </section>
 
         <!-- 模块 1：运动打卡 -->
         <section>
-            <div class="section-title">
+            <div class="section-title" id="exercise-title">
                 <span class="material-symbols-rounded">fitness_center</span>
                 今日运动
             </div>
@@ -836,7 +871,7 @@
                     </li>
                 </ul>
                 
-                <!-- 新增午餐自定义输入 -->
+                <!-- 午餐自定义输入 -->
                 <input type="text" id="lunch-input" class="md-input js-sync-input" placeholder="记录今天实际吃了什么（选填）" style="margin-bottom: 20px;">
 
                 <label class="meal-complete-wrapper js-ripple" data-target="card-lunch">
@@ -859,7 +894,7 @@
                     <option value="other">选项 D：其他 (请在下方输入)</option>
                 </select>
 
-                <!-- 新增晚餐自定义输入 -->
+                <!-- 晚餐自定义输入 -->
                 <input type="text" id="dinner-input" class="md-input js-sync-input" placeholder="如果没按选项吃，请填写实际内容（选填）" style="margin-bottom: 20px;">
 
                 <label class="meal-complete-wrapper js-ripple" data-target="card-dinner">
@@ -880,7 +915,7 @@
             </div>
             
             <div class="segment-control">
-                <button class="segment-btn active" data-val="today">今日打卡</button>
+                <button class="segment-btn active" data-val="today">单日打卡</button>
                 <button class="segment-btn" data-val="week">本周汇总</button>
                 <button class="segment-btn" data-val="month">本月汇总</button>
             </div>
@@ -1000,7 +1035,7 @@
 
 
             /* ===============================
-               2. 日历逻辑 (基准：2026.4.13 为第一周)
+               2. 核心状态：历史记录与日历逻辑
                =============================== */
             const BASE_START_DATE = new Date('2026-04-13T00:00:00'); // 周一
             const PLAN_START_DATE = new Date('2026-04-17T00:00:00'); // 计划开始时间
@@ -1008,11 +1043,22 @@
             const today = new Date(); 
             // 如果实际时间比基准时间早，强制让它等于测试时间，以便预览 UI
             const effectiveToday = today < BASE_START_DATE ? new Date('2026-04-17T00:00:00') : today;
+            effectiveToday.setHours(0,0,0,0);
+
+            // 格式化日期为 YYYY-MM-DD
+            function formatDateToString(dateObj) {
+                const yyyy = dateObj.getFullYear();
+                const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const dd = String(dateObj.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;
+            }
+
+            // 新增状态：当前正在查看的日期
+            let currentSelectedDate = new Date(effectiveToday);
             
             // 计算今天是基准日期的第几周
-            effectiveToday.setHours(0,0,0,0);
             const daysDiffFromBase = Math.floor((effectiveToday - BASE_START_DATE) / (1000 * 60 * 60 * 24));
-            let currentOffsetWeek = Math.floor(daysDiffFromBase / 7); // 当前自然周的偏移量（从0开始）
+            let currentOffsetWeek = Math.floor(daysDiffFromBase / 7);
 
             const weekTitleEl = document.getElementById('weekTitle');
             const weekRangeEl = document.getElementById('weekRange');
@@ -1043,17 +1089,20 @@
                     currentDay.setHours(0,0,0,0);
                     
                     const isToday = currentDay.getTime() === effectiveToday.getTime();
+                    const isSelected = currentDay.getTime() === currentSelectedDate.getTime();
                     const isPast = currentDay < effectiveToday;
                     const isBeforePlan = currentDay < PLAN_START_DATE;
 
                     // 4.17之前的必定为未完成，之后的日期因为还没接云端日历数据，暂时保留概率 mock
                     const isCompleted = !isBeforePlan && isPast && (Math.random() > 0.3);
 
-                    let classNames = 'cal-date-circle';
+                    let classNames = 'cal-date-circle js-ripple';
                     if (isToday) classNames += ' is-today';
                     if (isCompleted) classNames += ' is-completed';
+                    if (isSelected) classNames += ' is-selected';
 
-                    html += `<div class="${classNames}">${currentDay.getDate()}</div>`;
+                    const dateStr = formatDateToString(currentDay);
+                    html += `<div class="${classNames}" data-date="${dateStr}">${currentDay.getDate()}</div>`;
                 }
 
                 calGridEl.style.opacity = '0';
@@ -1072,6 +1121,23 @@
             document.getElementById('nextWeekBtn').addEventListener('click', () => {
                 currentOffsetWeek++;
                 renderWeek(currentOffsetWeek);
+            });
+
+            // 点击日历，查看历史记录
+            calGridEl.addEventListener('click', (e) => {
+                const circle = e.target.closest('.cal-date-circle');
+                if (circle && circle.dataset.date) {
+                    const clickedDate = new Date(circle.dataset.date);
+                    clickedDate.setHours(0,0,0,0);
+                    // 仅允许点击今天及以前的日期
+                    if (clickedDate <= effectiveToday) {
+                        currentSelectedDate = clickedDate;
+                        renderWeek(currentOffsetWeek); // 重新渲染高亮选中项
+                        loadDateData(currentSelectedDate);
+                    } else {
+                        showToast('暂不支持记录未来的打卡哦~');
+                    }
+                }
             });
 
             // 屏幕滑动切换 (手势识别)
@@ -1158,12 +1224,12 @@
                 const totalChecks = document.querySelectorAll('.task-check, .meal-check').length;
                 const checkedCount = document.querySelectorAll('.task-check:checked, .meal-check:checked').length;
                 const isCompleted = totalChecks > 0 && totalChecks === checkedCount;
-                const statusText = isCompleted ? '今日已完成' : '今日未完成';
+                const statusText = isCompleted ? '打卡已完成' : '打卡未完成';
 
                 const days = ['日', '一', '二', '三', '四', '五', '六'];
-                const weekDay = days[effectiveToday.getDay()];
-                const dateStr = `${effectiveToday.getFullYear()}年${effectiveToday.getMonth() + 1}月${effectiveToday.getDate()}日 星期${weekDay}`;
-                const bigDateStr = effectiveToday.getDate();
+                const weekDay = days[currentSelectedDate.getDay()];
+                const dateStr = `${currentSelectedDate.getFullYear()}年${currentSelectedDate.getMonth() + 1}月${currentSelectedDate.getDate()}日 星期${weekDay}`;
+                const bigDateStr = currentSelectedDate.getDate();
                 const weekStr = `第${currentOffsetWeek + 1}周`;
 
                 // 构建个人信息 HTML 块
@@ -1208,7 +1274,7 @@
                     wrapper.innerHTML = `
                         <div class="poster-header">
                             <div class="poster-title">本周打卡</div>
-                            <div class="poster-subtitle">${effectiveToday.getFullYear()}.${effectiveToday.getMonth()+1}.${effectiveToday.getDate()}</div>
+                            <div class="poster-subtitle">${currentSelectedDate.getFullYear()}.${currentSelectedDate.getMonth()+1}.${currentSelectedDate.getDate()}</div>
                         </div>
                     `;
                     const calendarClone = document.getElementById('calendarCard').cloneNode(true);
@@ -1223,12 +1289,12 @@
                     wrapper.innerHTML = `
                         <div class="poster-header">
                             <div class="poster-title">本月汇总</div>
-                            <div class="poster-subtitle">${effectiveToday.getFullYear()}年${effectiveToday.getMonth()+1}月</div>
+                            <div class="poster-subtitle">${currentSelectedDate.getFullYear()}年${currentSelectedDate.getMonth()+1}月</div>
                         </div>
                     `;
                     
-                    const year = effectiveToday.getFullYear();
-                    const month = effectiveToday.getMonth();
+                    const year = currentSelectedDate.getFullYear();
+                    const month = currentSelectedDate.getMonth();
                     const firstDay = new Date(year, month, 1);
                     const lastDay = new Date(year, month + 1, 0);
                     const daysInMonth = lastDay.getDate();
@@ -1317,8 +1383,8 @@
         const _supabaseKey = 'sb_publishable_glbxTRDd3aarMQYx7lo0vg_pJhuvtnb';
         const supabase = window.supabase.createClient(_supabaseUrl, _supabaseKey);
 
-        // 新增：保存当前图片 URL
         let currentPhotoUrl = '';
+        let isSyncingSuspended = false; // 用于在切换历史记录重置表单时，防止意外触发数据同步覆盖
 
         // Toast 提示框功能
         let toastTimeout;
@@ -1340,15 +1406,6 @@
             }, 4000);
         }
 
-        // 获取 YYYY-MM-DD 格式的本地日期
-        function getTodayString() {
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const dd = String(today.getDate()).padStart(2, '0');
-            return `${yyyy}-${mm}-${dd}`;
-        }
-
         // 获取当前页面的运动状态
         function getExercisesState() {
             return {
@@ -1356,7 +1413,7 @@
             };
         }
 
-        // 获取当前页面的饮食状态 (包含新增的自定义输入)
+        // 获取当前页面的饮食状态
         function getDietState() {
             return {
                 meals: Array.from(document.querySelectorAll('.meal-check')).map(el => el.checked),
@@ -1373,6 +1430,48 @@
         const uploadPlaceholder = document.getElementById('uploadPlaceholder');
         const uploadLoading = document.getElementById('uploadLoading');
 
+        const photoDisplayArea = document.getElementById('photoDisplayArea');
+        const downloadPhotoDirectBtn = document.getElementById('downloadPhotoDirectBtn');
+        const downloadPhotoLoadedBtn = document.getElementById('downloadPhotoLoadedBtn');
+
+        // --- 抽取公共的下载逻辑 ---
+        function executePhotoDownload(btnElement) {
+            if (!currentPhotoUrl) return;
+            
+            // 直接将图片 URL 传送给浏览器处理
+            const link = document.createElement('a');
+            link.href = currentPhotoUrl;
+            link.target = '_blank'; // 确保在某些浏览器下能新开页面显示
+            link.download = `身材打卡_${formatDateToString(currentSelectedDate)}.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 绑定两个下载按钮的事件
+        downloadPhotoDirectBtn.addEventListener('click', () => executePhotoDownload(downloadPhotoDirectBtn));
+        downloadPhotoLoadedBtn.addEventListener('click', () => executePhotoDownload(downloadPhotoLoadedBtn));
+
+        // --- 手动加载图片逻辑 ---
+        document.getElementById('triggerLoadPhoto').addEventListener('click', () => {
+            if (currentPhotoUrl) {
+                photoPreview.src = currentPhotoUrl;
+                document.getElementById('photoExistState').style.display = 'none';
+                document.getElementById('uploadArea').style.display = 'none';
+                photoDisplayArea.style.display = 'block';
+            }
+        });
+
+        // 绑定所有恢复为原样的重新上传按钮
+        document.querySelectorAll('.trigger-reupload').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('photoExistState').style.display = 'none';
+                photoDisplayArea.style.display = 'none';
+                document.getElementById('uploadArea').style.display = 'block';
+                photoInput.click(); // 主动触发文件选择
+            });
+        });
+
         photoInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -1382,8 +1481,8 @@
 
             // 生成唯一文件名
             const fileExt = file.name.split('.').pop();
-            const fileName = `${getTodayString()}-${Date.now()}.${fileExt}`;
-            const filePath = `${fileName}`; // 存放到 body-photos 桶的根目录
+            const fileName = `${formatDateToString(currentSelectedDate)}-${Date.now()}.${fileExt}`;
+            const filePath = `${fileName}`; 
 
             try {
                 // 上传到 Supabase Storage
@@ -1399,8 +1498,8 @@
 
                 // 更新前端 UI
                 photoPreview.src = currentPhotoUrl;
-                photoPreview.style.display = 'block';
-                uploadPlaceholder.style.display = 'none';
+                document.getElementById('uploadArea').style.display = 'none';
+                photoDisplayArea.style.display = 'block';
 
                 // 触发数据库同步
                 await syncToDatabase();
@@ -1416,11 +1515,13 @@
 
         // 写入/更新状态到数据库
         async function syncToDatabase() {
-            const dateStr = getTodayString();
+            if (isSyncingSuspended) return; // 若在重新加载界面则不进行保存
+
+            const dateStr = formatDateToString(currentSelectedDate);
             const exercises = getExercisesState();
             const diet = getDietState();
 
-            // 1. 先查询今天是否已经有记录 (使用 maybeSingle 避免报错)
+            // 1. 先查询该日期是否已经有记录
             const { data: existingRecord, error: selectError } = await supabase
                 .from('fit-tracker')
                 .select('id')
@@ -1435,7 +1536,6 @@
 
             let saveError = null;
 
-            // 包含新增的 photo_url 字段
             const payload = { 
                 date: dateStr, 
                 exercises: exercises, 
@@ -1444,14 +1544,12 @@
             };
 
             if (existingRecord && existingRecord.id) {
-                // 2. 如果已存在，按 id 覆盖更新
                 const { error } = await supabase
                     .from('fit-tracker')
                     .update(payload)
                     .eq('id', existingRecord.id);
                 saveError = error;
             } else {
-                // 3. 如果不存在，插入今日新数据
                 const { error } = await supabase
                     .from('fit-tracker')
                     .insert([payload]);
@@ -1466,14 +1564,55 @@
             }
         }
 
-        // 从数据库拉取今日状态并还原 UI
-        async function loadTodayData() {
-            const dateStr = getTodayString();
+        // 清空重置表单（在切换日期时调用）
+        function resetForm() {
+            isSyncingSuspended = true;
+
+            // 重置复选框
+            document.querySelectorAll('.task-check, .meal-check').forEach(el => {
+                el.checked = false;
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+
+            // 重置早餐选项
+            document.querySelectorAll('input[name="breakfast"]').forEach(el => {
+                el.checked = false;
+                el.closest('.radio-card').classList.remove('selected');
+            });
+
+            // 重置输入框和下拉框
+            document.querySelectorAll('.js-sync-input').forEach(el => {
+                el.value = '';
+            });
+            document.getElementById('dinner-select').value = '';
+
+            // 重置图片
+            currentPhotoUrl = '';
+            photoPreview.src = '';
+            photoDisplayArea.style.display = 'none';
+            document.getElementById('photoExistState').style.display = 'none';
+            document.getElementById('uploadArea').style.display = 'block';
+
+            isSyncingSuspended = false;
+        }
+
+        // 从数据库拉取选中日期的状态并还原 UI
+        async function loadDateData(dateObj) {
+            resetForm(); // 加载新数据前先重置 UI
+            
+            const dateStr = formatDateToString(dateObj);
+            const isToday = dateObj.getTime() === effectiveToday.getTime();
+            const dateLabel = isToday ? '今日' : `${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
+            
+            // 更新 UI 标题
+            document.getElementById('photo-title').innerText = `📸 ${dateLabel}身材记录`;
+            document.getElementById('exercise-title').innerHTML = `<span class="material-symbols-rounded">fitness_center</span> ${dateLabel}运动`;
+
             const { data, error } = await supabase
                 .from('fit-tracker')
                 .select('*')
                 .eq('date', dateStr)
-                .maybeSingle(); // 找不到数据返回 null，消除不必要的控制台报错
+                .maybeSingle();
 
             if (error) {
                 console.error("加载云端数据失败:", error.message);
@@ -1481,12 +1620,14 @@
             }
 
             if (data) {
-                // 还原图片展示
+                // 暂时挂起数据同步，避免在自动填充UI时反向覆盖数据
+                isSyncingSuspended = true;
+
+                // 还原图片展示 (改为默认不加载，显示待加载UI)
                 if (data.photo_url) {
                     currentPhotoUrl = data.photo_url;
-                    photoPreview.src = currentPhotoUrl;
-                    photoPreview.style.display = 'block';
-                    uploadPlaceholder.style.display = 'none';
+                    document.getElementById('photoExistState').style.display = 'block';
+                    document.getElementById('uploadArea').style.display = 'none';
                 }
 
                 // 1. 还原运动打卡 (复选框)
@@ -1494,7 +1635,7 @@
                     document.querySelectorAll('.task-check').forEach((el, i) => {
                         if (el.checked !== data.exercises.tasks[i]) {
                             el.checked = !!data.exercises.tasks[i];
-                            el.dispatchEvent(new Event('change', { bubbles: true })); // 触发变更事件以应用您的联动样式
+                            el.dispatchEvent(new Event('change', { bubbles: true }));
                         }
                     });
                 }
@@ -1529,7 +1670,6 @@
                         const dinnerSelect = document.getElementById('dinner-select');
                         if (dinnerSelect.value !== data.diet.dinner) {
                             dinnerSelect.value = data.diet.dinner;
-                            // 需注意：原生 select 的 change 事件不会被下面 input 同步拦截，需手动触发
                         }
                     }
 
@@ -1538,13 +1678,15 @@
                         document.getElementById('dinner-input').value = data.diet.dinnerCustom;
                     }
                 }
+
+                // 恢复同步
+                isSyncingSuspended = false;
             }
         }
 
-        // 为所有可能改变的表单控件绑定同步事件 (包含了新加的 text input)
+        // 为所有可能改变的表单控件绑定同步事件
         const inputsToSync = document.querySelectorAll('.task-check, .meal-check, input[name="breakfast"], .js-sync-input');
         
-        // 对于 text input，使用 'blur'（失去焦点）或 'input' 结合防抖来进行保存更合适。这里为求简便直接用 blur，在用户写完离开输入框时保存。
         inputsToSync.forEach(input => {
             if (input.type === 'text') {
                 input.addEventListener('blur', syncToDatabase);
@@ -1554,7 +1696,7 @@
         });
 
         // 页面加载完毕后，自动获取今天的数据进行 UI 初始化
-        loadTodayData();
+        loadDateData(currentSelectedDate);
             
         });
     </script>
