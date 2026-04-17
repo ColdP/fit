@@ -367,9 +367,70 @@
         .meal-complete-wrapper { display: flex; align-items: center; gap: 12px; padding: 16px; background-color: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); border-radius: var(--md-sys-shape-corner-large); cursor: pointer; transition: opacity 0.3s; font-weight: 600; }
         .card.completed .meal-complete-wrapper { opacity: 0.6; }
 
-        .md-select { width: 100%; padding: 16px; border-radius: var(--md-sys-shape-corner-medium); border: 2px solid var(--md-sys-color-outline); background-color: transparent; color: var(--md-sys-color-on-surface); font-size: 16px; font-family: inherit; appearance: none; outline: none; margin-bottom: 20px; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 16px center; background-size: 20px; }
+        /* 文本输入框样式 */
+        .md-input {
+            width: 100%;
+            padding: 16px;
+            border-radius: var(--md-sys-shape-corner-medium);
+            border: 2px solid var(--md-sys-color-outline);
+            background-color: transparent;
+            color: var(--md-sys-color-on-surface);
+            font-size: 16px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .md-input:focus { border-color: var(--md-sys-color-primary); }
+
+        .md-select { width: 100%; padding: 16px; border-radius: var(--md-sys-shape-corner-medium); border: 2px solid var(--md-sys-color-outline); background-color: transparent; color: var(--md-sys-color-on-surface); font-size: 16px; font-family: inherit; appearance: none; outline: none; margin-bottom: 12px; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 16px center; background-size: 20px; }
         [data-theme="dark"] .md-select { background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23C3C7CF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); }
         .md-select:focus { border-color: var(--md-sys-color-primary); }
+
+        /* 图片上传区域样式 */
+        .upload-area {
+            display: block;
+            width: 100%;
+            border: 2px dashed var(--md-sys-color-outline);
+            border-radius: var(--md-sys-shape-corner-large);
+            background-color: var(--md-sys-color-surface-container-high);
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            border-color: var(--md-sys-color-primary);
+            background-color: var(--md-sys-color-surface-container-highest);
+        }
+        .upload-placeholder {
+            padding: 40px 20px;
+            color: var(--md-sys-color-on-surface-variant);
+        }
+        .upload-placeholder .material-symbols-rounded {
+            font-size: 48px;
+            color: var(--md-sys-color-primary);
+            margin-bottom: 8px;
+        }
+        #photoPreview {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: contain;
+            display: none;
+            border-radius: var(--md-sys-shape-corner-large);
+        }
+        .loading-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(var(--md-sys-color-surface-container-high), 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--md-sys-color-primary);
+            z-index: 10;
+        }
 
         .ripple { position: absolute; border-radius: 50%; transform: scale(0); animation: ripple-animation 0.6s linear; background-color: currentColor; opacity: 0.15; pointer-events: none; }
         @keyframes ripple-animation { to { transform: scale(4); opacity: 0; } }
@@ -648,6 +709,30 @@
             </div>
         </section>
 
+        <!-- 新增模块：身材打卡 -->
+        <section>
+            <div class="card" id="card-photo" style="padding: 20px 24px;">
+                <div class="card-header">
+                    <div class="card-title">📸 今日身材记录</div>
+                </div>
+                
+                <label class="upload-area" id="uploadArea">
+                    <input type="file" id="photoInput" accept="image/*" style="display: none;">
+                    
+                    <div class="upload-placeholder" id="uploadPlaceholder">
+                        <span class="material-symbols-rounded">add_a_photo</span>
+                        <p style="font-size: 14px; font-weight: 500;">点击上传今日照片</p>
+                    </div>
+                    
+                    <img id="photoPreview" src="" alt="身材预览">
+                    
+                    <div class="loading-overlay" id="uploadLoading" style="display: none;">
+                        正在上传...
+                    </div>
+                </label>
+            </div>
+        </section>
+
         <!-- 模块 1：运动打卡 -->
         <section>
             <div class="section-title">
@@ -750,6 +835,9 @@
                         <div><b>蔬菜：</b>任何绿色叶子菜，越多越好。</div>
                     </li>
                 </ul>
+                
+                <!-- 新增午餐自定义输入 -->
+                <input type="text" id="lunch-input" class="md-input js-sync-input" placeholder="记录今天实际吃了什么（选填）" style="margin-bottom: 20px;">
 
                 <label class="meal-complete-wrapper js-ripple" data-target="card-lunch">
                     <input type="checkbox" class="md-checkbox meal-check">
@@ -760,15 +848,19 @@
             <!-- 晚餐卡片 -->
             <div class="card" id="card-dinner" style="margin-top: 24px;">
                 <div class="card-header">
-                    <div class="card-title">🌙 晚餐 (三选一)</div>
+                    <div class="card-title">🌙 晚餐 (三选一或自定义)</div>
                 </div>
                 
-                <select class="md-select" id="dinner-select">
+                <select class="md-select js-sync-input" id="dinner-select">
                     <option value="" disabled selected>点击选择今日晚餐</option>
                     <option value="a">选项 A：食堂的麻辣烫（不加麻酱/红油，只要清汤/番茄底）</option>
                     <option value="b">选项 B：一份炒菜（选不辣或微辣）+ 少许米饭</option>
                     <option value="c">选项 C：两个鸡蛋 + 一个苹果/香蕉</option>
+                    <option value="other">选项 D：其他 (请在下方输入)</option>
                 </select>
+
+                <!-- 新增晚餐自定义输入 -->
+                <input type="text" id="dinner-input" class="md-input js-sync-input" placeholder="如果没按选项吃，请填写实际内容（选填）" style="margin-bottom: 20px;">
 
                 <label class="meal-complete-wrapper js-ripple" data-target="card-dinner">
                     <input type="checkbox" class="md-checkbox meal-check">
@@ -875,7 +967,7 @@
                 check.addEventListener('change', (e) => {
                     const targetId = e.target.closest('.meal-complete-wrapper').getAttribute('data-target');
                     const card = document.getElementById(targetId);
-                    const textElements = card.querySelectorAll('.card-title, .radio-card span, .principle-item div, .md-select');
+                    const textElements = card.querySelectorAll('.card-title, .radio-card span, .principle-item div, .md-select, .md-input');
                     if (e.target.checked) {
                         card.style.opacity = '0.6';
                         textElements.forEach(el => el.style.textDecoration = 'line-through');
@@ -1209,14 +1301,14 @@
             }
 
             downloadBtn.addEventListener('click', () => {
-            if (!currentBlobUrl) return;
-            const link = document.createElement('a');
-            link.href = currentBlobUrl;
-            link.download = `减脂打卡_${currentPosterType}_${new Date().getTime()}.jpg`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
+                if (!currentBlobUrl) return;
+                const link = document.createElement('a');
+                link.href = currentBlobUrl;
+                link.download = `减脂打卡_${currentPosterType}_${new Date().getTime()}.jpg`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
         
         /* ===============================
            4. Supabase 数据同步逻辑
@@ -1224,6 +1316,9 @@
         const _supabaseUrl = 'https://jsfjdqncnlfjksvhnyes.supabase.co';
         const _supabaseKey = 'sb_publishable_glbxTRDd3aarMQYx7lo0vg_pJhuvtnb';
         const supabase = window.supabase.createClient(_supabaseUrl, _supabaseKey);
+
+        // 新增：保存当前图片 URL
+        let currentPhotoUrl = '';
 
         // Toast 提示框功能
         let toastTimeout;
@@ -1261,14 +1356,63 @@
             };
         }
 
-        // 获取当前页面的饮食状态
+        // 获取当前页面的饮食状态 (包含新增的自定义输入)
         function getDietState() {
             return {
                 meals: Array.from(document.querySelectorAll('.meal-check')).map(el => el.checked),
                 breakfast: Array.from(document.querySelectorAll('input[name="breakfast"]')).findIndex(el => el.checked),
-                dinner: document.getElementById('dinner-select').value
+                lunchCustom: document.getElementById('lunch-input').value.trim(),
+                dinner: document.getElementById('dinner-select').value,
+                dinnerCustom: document.getElementById('dinner-input').value.trim()
             };
         }
+
+        // --- 图片上传逻辑 ---
+        const photoInput = document.getElementById('photoInput');
+        const photoPreview = document.getElementById('photoPreview');
+        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+        const uploadLoading = document.getElementById('uploadLoading');
+
+        photoInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // 显示 loading
+            uploadLoading.style.display = 'flex';
+
+            // 生成唯一文件名
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${getTodayString()}-${Date.now()}.${fileExt}`;
+            const filePath = `${fileName}`; // 存放到 body-photos 桶的根目录
+
+            try {
+                // 上传到 Supabase Storage
+                const { error: uploadError } = await supabase.storage
+                    .from('body-photos')
+                    .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+                if (uploadError) throw uploadError;
+
+                // 获取公开图片地址
+                const { data } = supabase.storage.from('body-photos').getPublicUrl(filePath);
+                currentPhotoUrl = data.publicUrl;
+
+                // 更新前端 UI
+                photoPreview.src = currentPhotoUrl;
+                photoPreview.style.display = 'block';
+                uploadPlaceholder.style.display = 'none';
+
+                // 触发数据库同步
+                await syncToDatabase();
+                showToast('身材照片上传成功！', false);
+            } catch (error) {
+                console.error("图片上传失败:", error);
+                showToast('图片上传失败: ' + error.message, true);
+            } finally {
+                uploadLoading.style.display = 'none';
+            }
+        });
+
 
         // 写入/更新状态到数据库
         async function syncToDatabase() {
@@ -1291,18 +1435,26 @@
 
             let saveError = null;
 
+            // 包含新增的 photo_url 字段
+            const payload = { 
+                date: dateStr, 
+                exercises: exercises, 
+                diet: diet,
+                photo_url: currentPhotoUrl 
+            };
+
             if (existingRecord && existingRecord.id) {
                 // 2. 如果已存在，按 id 覆盖更新
                 const { error } = await supabase
                     .from('fit-tracker')
-                    .update({ exercises: exercises, diet: diet })
+                    .update(payload)
                     .eq('id', existingRecord.id);
                 saveError = error;
             } else {
                 // 3. 如果不存在，插入今日新数据
                 const { error } = await supabase
                     .from('fit-tracker')
-                    .insert([{ date: dateStr, exercises: exercises, diet: diet }]);
+                    .insert([payload]);
                 saveError = error;
             }
 
@@ -1329,6 +1481,14 @@
             }
 
             if (data) {
+                // 还原图片展示
+                if (data.photo_url) {
+                    currentPhotoUrl = data.photo_url;
+                    photoPreview.src = currentPhotoUrl;
+                    photoPreview.style.display = 'block';
+                    uploadPlaceholder.style.display = 'none';
+                }
+
                 // 1. 还原运动打卡 (复选框)
                 if (data.exercises && data.exercises.tasks) {
                     document.querySelectorAll('.task-check').forEach((el, i) => {
@@ -1359,22 +1519,38 @@
                         }
                     }
 
-                    // 4. 还原晚餐选项 (下拉菜单)
+                    // 4. 还原午餐输入框
+                    if (data.diet.lunchCustom !== undefined) {
+                        document.getElementById('lunch-input').value = data.diet.lunchCustom;
+                    }
+
+                    // 5. 还原晚餐选项 (下拉菜单)
                     if (data.diet.dinner) {
                         const dinnerSelect = document.getElementById('dinner-select');
                         if (dinnerSelect.value !== data.diet.dinner) {
                             dinnerSelect.value = data.diet.dinner;
-                            dinnerSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                            // 需注意：原生 select 的 change 事件不会被下面 input 同步拦截，需手动触发
                         }
+                    }
+
+                    // 6. 还原晚餐输入框
+                    if (data.diet.dinnerCustom !== undefined) {
+                        document.getElementById('dinner-input').value = data.diet.dinnerCustom;
                     }
                 }
             }
         }
 
-        // 为所有可能改变的表单控件绑定同步事件
-        const inputsToSync = document.querySelectorAll('.task-check, .meal-check, input[name="breakfast"], #dinner-select');
+        // 为所有可能改变的表单控件绑定同步事件 (包含了新加的 text input)
+        const inputsToSync = document.querySelectorAll('.task-check, .meal-check, input[name="breakfast"], .js-sync-input');
+        
+        // 对于 text input，使用 'blur'（失去焦点）或 'input' 结合防抖来进行保存更合适。这里为求简便直接用 blur，在用户写完离开输入框时保存。
         inputsToSync.forEach(input => {
-            input.addEventListener('change', syncToDatabase);
+            if (input.type === 'text') {
+                input.addEventListener('blur', syncToDatabase);
+            } else {
+                input.addEventListener('change', syncToDatabase);
+            }
         });
 
         // 页面加载完毕后，自动获取今天的数据进行 UI 初始化
